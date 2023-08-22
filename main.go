@@ -22,24 +22,22 @@ var (
 
 
 func initApp(mongoClient *mongo.Client) {
-	ctx := context.TODO()
-	mongocollection := mongoClient.Database(constants.ConnectionStrings).Collection("profiles")
-	bankingservice := services.BankingServiceInit(mongocollection, ctx)
-	bankingController := controllers.BankingControllerInit(bankingservice)
-	routes.BankingRoute(server, bankingController)
-
+	ctx = context.TODO()
+	transactionCollection := mongoClient.Database(constants.DatabaseName).Collection("bank")
+	transactionService := services.NewBankingServiceInit(transactionCollection, ctx)
+	transactionController := controllers.InitBankingController(transactionService)
+	routes.BankingRoute(server, transactionController)
 }
 
 func main() {
-	server := gin.Default()
-	mongoClient, err := config.ConnectDataBase()
-	defer mongoClient.Disconnect(ctx)
+	server = gin.Default()
+	mongoclient, err := config.ConnectDataBase()
+	defer mongoclient.Disconnect(ctx)
 	if err != nil {
 		panic(err)
 	}
-
-	initApp(mongoClient)
-	fmt.Println("server is running on", constants.Port)
+	
+	initApp(mongoclient)
+	fmt.Println("server running on port", constants.Port)
 	log.Fatal(server.Run(constants.Port))
-
 }

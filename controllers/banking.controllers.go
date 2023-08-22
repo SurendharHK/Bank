@@ -2,36 +2,51 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"main.go/interfaces"
 	"main.go/models"
 )
 
-type BankingController struct{
-	BankingService interfaces.IBank
+type BankingController struct {
+	TransactionService interfaces.IBank
 }
 
-func BankingControllerInit(bankingService interfaces.IBank)BankingController{
-	return BankingController{bankingService}
+func InitBankingController(profileService interfaces.IBank) BankingController {
+	return BankingController{profileService}
 }
 
-func(bc *BankingController)CreateCustomer(ctx *gin.Context){
-	var customer *models.Customer
+func (pc *BankingController) CreateTransaction(ctx *gin.Context) {
+	var profile *models.Customer
+	if err := ctx.ShouldBindJSON(&profile); err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	newProfile, err := pc.TransactionService.CreateCustomer(profile)
 
-	if err := ctx.ShouldBindJSON(&customer); err!=nil{
-		ctx.JSON(http.StatusBadRequest,err.Error())
+	if err != nil {
+		if strings.Contains(err.Error(), "title already exists") {
+			ctx.JSON(http.StatusConflict, gin.H{"status": "fail", "message": err.Error()})
+			return
+		}
+
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	newcustomer,err :=bc.BankingService.CreateCustomer(customer)
+	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": newProfile})
+}
 
+func(pc *BankingController)GetCustomers(ctx *gin.Context){
+	
+
+
+	customers,err:=pc.TransactionService.GetCustomers()
 	if err!=nil{
-		ctx.JSON(http.StatusBadGateway,gin.H{"status": "fail","Data":err.Error()})
-		return
+		ctx.JSON(http.StatusNotFound,gin.H{"status":"fail","message":err.Error()})
 	}
-
-	ctx.JSON(http.StatusCreated,gin.H{"status":"successfull","Data":newcustomer})
-
+	ctx.JSON(http.StatusFound,gin.H{"status":"success","message":customers})
 
 }
+

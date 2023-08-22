@@ -6,5 +6,6 @@ import (
 )
 
 func BankingRoute(route *gin.Engine,controller controllers.BankingController){
-	route.POST("/banking/create",controller.CreateCustomer)
+	route.POST("/banking/create",controller.CreateTransaction)
+	route.GET("/customers",controller.GetCustomers)
 }
