@@ -8,4 +8,6 @@ import (
 func BankingRoute(route *gin.Engine,controller controllers.BankingController){
 	route.POST("/banking/create",controller.CreateTransaction)
 	route.GET("/customers",controller.GetCustomers)
+	route.POST("/banking/updatecustomer",controller.UpdateCustomer)
+	route.POST("/banking/deletecustomer",controller.DeleteCustomer)
 }

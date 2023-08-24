@@ -16,7 +16,31 @@ type BankingService struct {
 	ctx               context.Context
 }
 
+// DeleteCustomer implements interfaces.IBank.
+func (t *BankingService) DeleteCustomer(name string) (*mongo.DeleteResult, error) {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	filter := bson.D{{"name", name}}
+	
+	result, err := t.BankingCollection.DeleteOne(ctx, filter)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return result, nil
+	
+}
 
+// UpdateCustomer implements interfaces.IBank.
+func (t *BankingService) UpdateCustomer(intialName string, updateName string) (*mongo.UpdateResult, error) {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	filter := bson.D{{"name", intialName}}
+	update := bson.D{{"$set", bson.D{{"name", updateName}}}}
+	result, err := t.BankingCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return result, nil
+
+}
 
 // GetCustomers implements interfaces.IBank.
 func (t *BankingService) GetCustomers() ([]*models.Customer, error) {
